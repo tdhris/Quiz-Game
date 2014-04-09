@@ -1,5 +1,5 @@
 import sqlite3
-import os
+from random import randint
 from question import Question
 
 conn = sqlite3.connect("quiz_game.db")
@@ -22,8 +22,10 @@ def create_table():
     conn.commit()
 
 
-def delete_database():
-    os.remove("quiz_game.db")
+def drop_tables():
+    cursor.execute('DROP TABLE IF EXISTS questions')
+    cursor.execute('DROP TABLE IF EXISTS answers')
+    conn.commit()
 
 
 def save_question(question):
@@ -64,3 +66,22 @@ def load_question(question_id):
 
     question = Question(difficulty_level, question_text, answers, right_answer)
     return question
+
+
+def load_level_question(level):
+    cursor.execute("SELECT id FROM questions\
+                    WHERE difficulty_level = ?", (level,))
+    questions_ids = [fetched_id[0] for fetched_id in cursor.fetchall()]
+    if not questions_ids:
+        return False
+
+    random_id = randint(1, len(questions_ids)) - 1
+    question_id = questions_ids[random_id]
+    question = load_question(question_id)
+    return question
+
+
+def count_questions():
+    cursor.execute("SELECT Count(id) FROM questions")
+    question_count = cursor.fetchone()[0]
+    return question_count
