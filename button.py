@@ -1,37 +1,37 @@
 import pygame
 
 
-class Button:
-    def __init__(self, text):
-        self.text = text
+class Button(pygame.sprite.Sprite):
+    def __init__(self, label, default_image, hover_image, coordinates, function):
+        pygame.sprite.Sprite.__init__(self)
+        self.label = label
+        self.default_image = pygame.image.load(default_image).convert_alpha()
+        self.hover_image = pygame.image.load(hover_image).convert_alpha()
+        self.coordinates = coordinates
+        self.function = function
         self.is_hover = False
-        self.default_color = (100, 100, 100)
-        self.hover_color = (255, 255, 255)
-        self.font_color = (0, 0, 0)
         self.surface = None
 
-    def label(self):
-        '''button label font'''
-        font = pygame.font.Font(None, 20)
-        return font.render(self.text, 1, self.font_color)
+    def __eq__(self, other):
+        return self.label == other.label and self.function == other.function
 
-    def color(self):
-        '''change color when hovering'''
+    @property
+    def image(self):
         if self.is_hover:
-            return self.hover_color
+            return self.hover_image
         else:
-            return self.default_color
+            return self.default_image
 
-    def draw(self, screen, mouse, rectcoord, labelcoord):
-        '''create rect button, draw, and change color based on input'''
-        self.surface = pygame.draw.rect(screen, self.color(), rectcoord)
-        screen.blit(self.label(), labelcoord)
-
-        #change color if mouse over button
+    def draw(self, screen, mouse):
         self.check_hover(mouse)
+        screen.blit(self.image, self.coordinates)
 
     def check_hover(self, mouse):
-        '''adjust is_hover value based on mouse over button
-        - to change hover color'''
-        self.is_hover = self.surface.collidepoint(mouse)
+        mouse_x, mouse_y = mouse
+        button_x, button_y = self.coordinates
+        width = self.image.get_width()
+        height = self.image.get_height()
+        x_inside = (mouse_x > button_x) and (mouse_x < button_x + width)
+        y_inside = (mouse_y > button_y) and (mouse_y < button_y + height)
+        self.is_hover = x_inside and y_inside
         return self.is_hover
